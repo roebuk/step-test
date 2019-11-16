@@ -32,7 +32,7 @@ type alias Model =
 type Page
     = Home
     | FitnessTest FitnessTest.Model
-    | Results
+    | Results Results.Model
     | NotFound
 
 
@@ -57,6 +57,7 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged (Maybe Routes.Route)
     | GotFitnessMsg FitnessTest.Msg
+    | GotResultsMsg Results.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,11 +80,26 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        GotResultsMsg resultMsg ->
+            case model.page of
+                Results result ->
+                    toResult model (Results.update resultMsg result)
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 toFitness : Model -> ( FitnessTest.Model, Cmd FitnessTest.Msg ) -> ( Model, Cmd Msg )
 toFitness model ( fitness, cmd ) =
     ( { model | page = FitnessTest fitness }
     , Cmd.map GotFitnessMsg cmd
+    )
+
+
+toResult : Model -> ( Results.Model, Cmd Results.Msg ) -> ( Model, Cmd Msg )
+toResult model ( result, cmd ) =
+    ( { model | page = Results result }
+    , Cmd.map GotResultsMsg cmd
     )
 
 
@@ -101,7 +117,11 @@ setNewPage maybeRoute model =
             ( { model | page = FitnessTest fitnessModel }, Cmd.map GotFitnessMsg fitnessCmds )
 
         Just Routes.Results ->
-            ( { model | page = Results }, Cmd.none )
+            let
+                ( resultsModel, resultsCmds ) =
+                    Results.init
+            in
+            ( { model | page = Results resultsModel }, Cmd.map GotResultsMsg resultsCmds )
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
@@ -166,9 +186,10 @@ viewContent page =
                 |> Html.map GotFitnessMsg
             )
 
-        Results ->
+        Results model ->
             ( "Results"
-            , Results.view
+            , Results.view model
+                |> Html.map GotResultsMsg
             )
 
         NotFound ->
