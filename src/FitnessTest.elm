@@ -4,7 +4,6 @@ import Html as Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (on)
 import Json.Decode as Decode
-import Random
 import Time
 
 
