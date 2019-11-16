@@ -1,3 +1,22 @@
+import prop from 'ramda/src/prop';
+import invoker from 'ramda/src/invoker';
+import compose from 'ramda/src/compose';
+
+//--- getEventValue :: Event -> a
+const getEventValue = compose(
+  prop('value'),
+  prop('target')
+)
+
+//---  getFirstByteOffset :: DataView -> Number
+const getFirstByteOffset = invoker(1, 'getUint8')
+
+//--- getHeartBeatValue :: Event -> Number
+const getHeartBeatValue = compose(
+  getFirstByteOffset(1),
+  getEventValue
+)
+
 const requestBluetooth = (dispatch) =>
   navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] })
     .then(device => {
@@ -12,10 +31,10 @@ const requestBluetooth = (dispatch) =>
     .then(characteristic => characteristic.startNotifications())
     .then(characteristic => {
       characteristic.addEventListener('characteristicvaluechanged', (e) => {
-        dispatch(getHeartBeat(e))
+        console.log(getHeartBeat(e))
       })
     })
-    .catch(() => dispatch(userCancelled()))
+    .catch(console.error)
 
 
 export default requestBluetooth

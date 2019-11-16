@@ -11,6 +11,14 @@ import Time
 port requestBT : () -> Cmd msg
 
 
+stepDuration =
+    180
+
+
+sitDuration =
+    60
+
+
 type GameState
     = CountDown
     | Stepping
@@ -32,13 +40,15 @@ type Sex
 
 type alias Person =
     { name : String
-    , age : Int
+    , age : String
     , sex : Sex
     }
 
 
 type alias Model =
-    { person : Person
+    { name : String
+    , age : String
+    , sex : Sex
     , heartBeat : HeartBeat
     , gameTime : Int
     , number : Int
@@ -65,7 +75,9 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { person = Person "" 0 Male
+    ( { name = ""
+      , age = ""
+      , sex = Female
       , heartBeat = NotRequested
       , gameTime = 180
       , number = 0
@@ -78,13 +90,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetName name ->
-            ( model, Cmd.none )
+            ( { model | name = name }, Cmd.none )
 
         SetSex sex ->
-            ( model, Cmd.none )
+            ( { model | sex = sex }, Cmd.none )
 
         SetAge age ->
-            ( model, Cmd.none )
+            ( { model | age = age }, Cmd.none )
 
         GotBeat beats ->
             ( { model | heartBeat = Beating beats }, Cmd.none )
@@ -135,10 +147,7 @@ viewTextInput inputLabel inputValue tagger =
         ]
 
 
-
--- viewRadio : String -> Bool -> msg -> Html msg
-
-
+viewRadio : String -> Sex -> Sex -> (Sex -> Msg) -> Html Msg
 viewRadio radioLabel value selectedValue tagger =
     let
         inputID =
@@ -186,12 +195,12 @@ view : Model -> Html Msg
 view model =
     div []
         [ Html.form [ Events.onSubmit GotFormSubmission ]
-            [ viewTextInput "Name" model.person.name SetName
-            , viewTextInput "Age" (String.fromInt model.person.age) SetAge
+            [ viewTextInput "Name" model.name SetName
+            , viewTextInput "Age" model.age SetAge
             , fieldset [ class "form-element" ]
                 [ legend [ class "form-element-label-text" ] [ text "Sex" ]
-                , viewRadio "Female" Female model.person.sex SetSex
-                , viewRadio "Male" Male model.person.sex SetSex
+                , viewRadio "Female" Female model.sex SetSex
+                , viewRadio "Male" Male model.sex SetSex
                 ]
             , viewHeart model.heartBeat
             , button [ type_ "submit", class "button mod-full" ] [ text "Start A new game" ]

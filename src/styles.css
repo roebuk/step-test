@@ -1,5 +1,7 @@
 :root {
-  --mainColour: #076bc4;
+  --mainColour: hsl(208, 93%, 40%);
+  --mainColourLight: hsl(208, 93%, 50%)
+
 }
 
 *,
@@ -59,8 +61,13 @@ a {
   text-transform: uppercase;
 }
 
+.nav-link:focus,
+.nav-link:hover {
+  opacity: 0.6;
+}
+
 .nav-link + .nav-link {
-  margin-left: 1rem;
+  margin-left: 2.5rem;
 }
 
 .main {
@@ -76,9 +83,18 @@ a {
 
 .footer {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   background: var(--mainColour);
   padding: 2rem;
+}
+
+.footer-right {
+  display: flex;
+}
+
+.footer-text {
+  color: #fff;
 }
 
 .footer-logo {
@@ -168,6 +184,12 @@ form {
   color:#fff;
   text-align: center;
   font-size: 2rem;
+  transition: background 0.3s ease;
+}
+
+.button:focus,
+.button:hover {
+  background-color: var(--mainColourLight);
 }
 
 .button.mod-full {

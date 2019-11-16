@@ -127,8 +127,19 @@ viewHeader _ =
 viewFooter : () -> Html msg
 viewFooter _ =
     Html.footer [ class "footer" ]
-        [ a [ href "https://twitter.com/roebuk" ] [ text "Twitter" ]
-        , a [ href "https://github.com/roebuk" ] [ text "Github" ]
+        [ div [] [ span [ class "footer-text" ] [ text "Kristian Roebuck" ] ]
+        , div [ class "footer-right" ]
+            [ a
+                [ class "footer-logo mod-twitter"
+                , href "https://twitter.com/roebuk"
+                ]
+                [ span [ class "visually-hidden" ] [ text "Twitter" ] ]
+            , a
+                [ class "footer-logo mod-github"
+                , href "https://github.com/roebuk"
+                ]
+                [ span [ class "visually-hidden" ] [ text "Github" ] ]
+            ]
         ]
 
 
