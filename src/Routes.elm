@@ -1,4 +1,4 @@
-module Routes exposing (Route(..), match)
+module Routes exposing (Route(..), href, match)
 
 import Html
 import Html.Attributes
@@ -8,6 +8,22 @@ import Url.Parser as Parser exposing (Parser)
 
 type Route
     = Home
+    | Results
+
+
+href : Route -> Html.Attribute msg
+href route =
+    Html.Attributes.href (routeToString route)
+
+
+routeToString : Route -> String
+routeToString route =
+    case route of
+        Home ->
+            "/"
+
+        Results ->
+            "/results"
 
 
 routeParser : Parser (Route -> a) a

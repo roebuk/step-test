@@ -22,3 +22,81 @@ body {
 a {
   text-decoration: none;
 }
+
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+.header {
+  padding: 2rem;
+  background-color: #404040;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.header-title {
+  color: #fff;
+}
+
+.nav-link {
+  color: #fff;
+}
+
+.nav-link + .nav-link {
+  margin-left: 1rem;
+}
+
+.main {
+  flex: 1;
+  padding: 4rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+
+.footer {
+  display: flex;
+  justify-content: center;
+  background: black;
+  padding: 2rem;
+}
+
+.footer-logo {
+  display: block;
+  height: 4rem;
+  width: 4rem;
+  background: url(./images/twitter.svg) no-repeat;
+  transition: opacity 0.3s ease;
+  fill: #fff
+}
+
+.footer-logo + .footer-logo {
+  margin-left: 3rem;
+}
+
+.footer-logo:hover,
+.footer-logo:focus {
+  opacity: 0.6;
+}
+
+.footer-logo.mod-twitter {
+  background-image: url(./images/twitter.svg);
+}
+
+.footer-logo.mod-github {
+  background-image: url(./images/github.svg);
+}

@@ -2,7 +2,8 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (main_, text)
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Routes
 import Url exposing (Url)
 
@@ -19,6 +20,7 @@ type alias Model =
 
 type Page
     = Home
+    | Results
     | NotFound
 
 
@@ -62,6 +64,9 @@ setNewPage maybeRoute model =
         Just Routes.Home ->
             ( { model | page = Home }, Cmd.none )
 
+        Just Routes.Results ->
+            ( { model | page = Results }, Cmd.none )
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -70,11 +75,42 @@ setNewPage maybeRoute model =
 ---- VIEW ----
 
 
+viewHeader : Html msg
+viewHeader =
+    Html.header [ class "header" ]
+        [ div [ class "header-inner" ]
+            [ Html.h1 [] [ a [ Routes.href Routes.Home, class "header-title" ] [ text "STEP TEST" ] ]
+            , div []
+                [ a [ Routes.href Routes.Results, class "nav-link" ] [ text "Results" ]
+                , a [ Routes.href Routes.Results, class "nav-link" ] [ text "About" ]
+                ]
+            ]
+        ]
+
+
+viewFooter : Html msg
+viewFooter =
+    Html.footer [ class "footer" ]
+        [ a
+            [ class "footer-logo mod-twitter"
+            , href "https://twitter.com/roebuk"
+            ]
+            [ span [ class "visually-hidden" ] [ text "Twitter" ] ]
+        , a
+            [ class "footer-logo mod-github"
+            , href "https://github.com/roebuk/step-test"
+            ]
+            [ span [ class "visually-hidden" ] [ text "Github" ] ]
+        ]
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Hello"
     , body =
-        [ main_ [] [ text "Hello World" ]
+        [ viewHeader
+        , main_ [ class "main" ] [ text "Hello World" ]
+        , viewFooter
         ]
     }
 
