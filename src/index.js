@@ -10,5 +10,8 @@ const app = Elm.Main.init({
 })
 
 app.ports.requestBT.subscribe(function () {
-  requestBluetooth();
+  requestBluetooth(app.ports.receiveHeartBeat.send);
 })
+
+
+console.log(app)

@@ -31,7 +31,7 @@ const requestBluetooth = (dispatch) =>
     .then(characteristic => characteristic.startNotifications())
     .then(characteristic => {
       characteristic.addEventListener('characteristicvaluechanged', (e) => {
-        console.log(getHeartBeatValue(e))
+        dispatch(getHeartBeatValue(e));
       })
     })
     .catch(console.error)

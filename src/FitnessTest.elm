@@ -11,6 +11,9 @@ import Time
 port requestBT : () -> Cmd msg
 
 
+port receiveHeartBeat : (Int -> msg) -> Sub msg
+
+
 stepDuration =
     180
 
@@ -20,7 +23,7 @@ sitDuration =
 
 
 type GameState
-    = CountDown
+    = RequestingInfo
     | Stepping
     | Sitting
     | Results
@@ -38,39 +41,25 @@ type Sex
     | Female
 
 
-type alias Person =
-    { name : String
-    , age : String
-    , sex : Sex
-    }
-
-
 type alias Model =
     { name : String
     , age : String
     , sex : Sex
     , heartBeat : HeartBeat
+    , gameState : GameState
     , gameTime : Int
     , number : Int
     }
 
 
-
--- updatePerson :
--- updatePerson =
-
-
 type Msg
     = GotFormSubmission
-    | Roll
-      -- | PersonMsg PersonMsg
     | SetName String
     | SetSex Sex
     | SetAge String
     | RequestBlueTooth
-    | GotBeat Int
+    | GotHeartBeat Int
     | Tick Time.Posix
-    | NewFace Int
 
 
 init : ( Model, Cmd Msg )
@@ -79,6 +68,7 @@ init =
       , age = ""
       , sex = Female
       , heartBeat = NotRequested
+      , gameState = RequestingInfo
       , gameTime = 180
       , number = 0
       }
@@ -98,20 +88,14 @@ update msg model =
         SetAge age ->
             ( { model | age = age }, Cmd.none )
 
-        GotBeat beats ->
+        GotHeartBeat beats ->
             ( { model | heartBeat = Beating beats }, Cmd.none )
 
-        NewFace number ->
-            ( { model | number = number }, Cmd.none )
-
         GotFormSubmission ->
-            ( model, Cmd.none )
+            ( { model | gameState = Stepping }, Cmd.none )
 
         RequestBlueTooth ->
             ( { model | heartBeat = Requested }, requestBT () )
-
-        Roll ->
-            ( model, Random.generate NewFace (Random.int 1 6) )
 
         Tick _ ->
             let
@@ -193,23 +177,40 @@ viewHeart heartbeat =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ Html.form [ Events.onSubmit GotFormSubmission ]
-            [ viewTextInput "Name" model.name SetName
-            , viewTextInput "Age" model.age SetAge
-            , fieldset [ class "form-element" ]
-                [ legend [ class "form-element-label-text" ] [ text "Sex" ]
-                , viewRadio "Female" Female model.sex SetSex
-                , viewRadio "Male" Male model.sex SetSex
-                ]
-            , viewHeart model.heartBeat
-            , button [ type_ "submit", class "button mod-full" ] [ text "Start A new game" ]
+    div [] <|
+        case model.gameState of
+            RequestingInfo ->
+                [ viewForm model ]
+
+            Stepping ->
+                [ text "stepping" ]
+
+            Sitting ->
+                [ text "sitting" ]
+
+            Results ->
+                [ text "results" ]
+
+
+viewForm : Model -> Html Msg
+viewForm model =
+    Html.form [ Events.onSubmit GotFormSubmission ]
+        [ viewTextInput "Name" model.name SetName
+        , viewTextInput "Age" model.age SetAge
+        , fieldset [ class "form-element" ]
+            [ legend [ class "form-element-label-text" ] [ text "Sex" ]
+            , viewRadio "Female" Female model.sex SetSex
+            , viewRadio "Male" Male model.sex SetSex
             ]
+        , viewHeart model.heartBeat
+        , button [ type_ "submit", class "button mod-full" ] [ text "Start" ]
         ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [-- Time.every 1000 Tick
+        [ receiveHeartBeat GotHeartBeat
+
+        -- Time.every 1000 Tick
         ]
