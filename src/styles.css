@@ -1,3 +1,7 @@
+:root {
+  --mainColour: #076bc4;
+}
+
 *,
 ::after,
 ::before {
@@ -34,7 +38,7 @@ a {
 
 .header {
   padding: 2rem;
-  background-color: #404040;
+  background-color: var(--mainColour);
 }
 
 .header-inner {
@@ -47,10 +51,12 @@ a {
 
 .header-title {
   color: #fff;
+  text-transform: uppercase;
 }
 
 .nav-link {
   color: #fff;
+  text-transform: uppercase;
 }
 
 .nav-link + .nav-link {
@@ -71,7 +77,7 @@ a {
 .footer {
   display: flex;
   justify-content: center;
-  background: black;
+  background: var(--mainColour);
   padding: 2rem;
 }
 
@@ -99,4 +105,111 @@ a {
 
 .footer-logo.mod-github {
   background-image: url(./images/github.svg);
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+form {
+  width: 28rem;
+  margin: 0 auto;
+}
+
+.form-element {
+
+}
+
+.form-element-radio + .form-element-radio {
+  margin-top: 0.4rem;
+}
+
+.form-element + .form-element {
+  margin-top: 2.5rem;
+}
+
+.form-element-input {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  border-radius: 0.4rem;
+  border: 0.2rem solid#9b9b9b;
+  font-size: 1.6rem;
+  transition: border-color 0.3s;
+}
+
+.form-element-input:active,
+.form-element-input:focus {
+  border-color: #076bc4;;
+}
+
+.form-element-label {
+
+}
+
+.form-element-label-text {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.button {
+  display: inline-block;
+  border: none;
+  padding: 1.5rem 3.2rem;
+  font-size: inherit;
+  text-transform: uppercase;
+  border-radius: 5rem;
+  cursor: pointer;
+  background:#076bc4;
+  color:#fff;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.button.mod-full {
+  width: 100%;
+}
+
+.button.mod-small {
+  padding: 0.7rem 1.8rem;
+  font-size: 1.6rem;
+  padding: 0.7rem 1.8rem;
+  font-size: 1.6rem;
+  background:#fff;
+  border: 2px solid#076bc4;
+  color:#076bc4;
+}
+
+.button.mod-small:disabled {
+  border-color:gray;
+  color:gray;
+}
+
+.bluetooth-button-container {
+  display: flex;
+  justify-content: center;
+  margin: 2.5rem 0 3rem;
+}
+
+.workout {
+  height: 40rem;
+  width: 40rem;
+  background: url(./images/workout.svg) center / contain no-repeat;
+}
+
+.warning {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  background:#e6c86e;
+}
+
+
+/* HOME  */
+.home-container {
+  max-width: 50rem;
 }

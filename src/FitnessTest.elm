@@ -11,9 +11,6 @@ import Time
 port requestBT : () -> Cmd msg
 
 
-port activeUsers : (Int -> msg) -> Sub msg
-
-
 type GameState
     = CountDown
     | Stepping
@@ -73,7 +70,7 @@ init =
       , gameTime = 180
       , number = 0
       }
-    , Random.generate NewFace (Random.int 1 6)
+    , Cmd.none
     )
 
 
@@ -84,20 +81,12 @@ update msg model =
             ( model, Cmd.none )
 
         SetSex sex ->
-            let
-                _ =
-                    Debug.log "got sex" sex
-            in
             ( model, Cmd.none )
 
         SetAge age ->
             ( model, Cmd.none )
 
         GotBeat beats ->
-            let
-                _ =
-                    Debug.log "" beats
-            in
             ( { model | heartBeat = Beating beats }, Cmd.none )
 
         NewFace number ->
@@ -107,10 +96,6 @@ update msg model =
             ( model, Cmd.none )
 
         RequestBlueTooth ->
-            let
-                _ =
-                    Debug.log "req bt" model
-            in
             ( { model | heartBeat = Requested }, requestBT () )
 
         Roll ->
@@ -217,6 +202,5 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ activeUsers GotBeat
-        , Time.every 1000 Tick
+        [ Time.every 1000 Tick
         ]

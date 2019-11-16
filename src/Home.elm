@@ -7,6 +7,7 @@ import Routes
 
 view : Html msg
 view =
-    div []
-        [ a [ Routes.href Routes.FitnessTest, class "button" ] [ text "Let's Do This!" ]
+    div [ class "home-container" ]
+        [ div [ class "workout" ] []
+        , a [ Routes.href Routes.FitnessTest, class "button mod-full" ] [ text "Let's Do This!" ]
         ]

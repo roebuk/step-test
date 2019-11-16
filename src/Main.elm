@@ -5,7 +5,7 @@ import Browser.Navigation as Nav
 import FitnessTest
 import Home
 import Html exposing (..)
-import Html.Attributes as Attrs exposing (href, src)
+import Html.Attributes exposing (class, href)
 import Html.Lazy exposing (lazy)
 import NotFound
 import Results
@@ -17,8 +17,14 @@ import Url exposing (Url)
 ---- MODEL ----
 
 
+type alias Flags =
+    { hasBluetooth : Bool
+    }
+
+
 type alias Model =
-    { navKey : Nav.Key
+    { hasBluetooth : Bool
+    , navKey : Nav.Key
     , page : Page
     }
 
@@ -30,14 +36,15 @@ type Page
     | NotFound
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
-    setNewPage (Routes.match url) (initialModel key)
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    setNewPage (Routes.match url) (initialModel key flags)
 
 
-initialModel : Nav.Key -> Model
-initialModel key =
+initialModel : Nav.Key -> Flags -> Model
+initialModel key flags =
     { page = NotFound
+    , hasBluetooth = flags.hasBluetooth
     , navKey = key
     }
 
@@ -104,14 +111,14 @@ setNewPage maybeRoute model =
 ---- VIEW ----
 
 
-viewHeader : Page -> Html msg
-viewHeader page =
-    Html.header [ Attrs.class "header" ]
-        [ div [ Attrs.class "header-inner" ]
-            [ Html.h1 [] [ a [ Routes.href Routes.Home, Attrs.class "header-title" ] [ text "HEADER" ] ]
+viewHeader : () -> Html msg
+viewHeader _ =
+    Html.header [ class "header" ]
+        [ div [ class "header-inner" ]
+            [ Html.h1 [] [ a [ Routes.href Routes.Home, class "header-title" ] [ text "Step Test" ] ]
             , div []
-                [ a [ Routes.href Routes.Results, Attrs.class "nav-link" ] [ text "Results" ]
-                , a [ Routes.href Routes.Results, Attrs.class "nav-link" ] [ text "About" ]
+                [ a [ Routes.href Routes.Results, class "nav-link" ] [ text "Results" ]
+                , a [ Routes.href Routes.Results, class "nav-link" ] [ text "About" ]
                 ]
             ]
         ]
@@ -119,10 +126,19 @@ viewHeader page =
 
 viewFooter : () -> Html msg
 viewFooter _ =
-    Html.footer [ Attrs.class "footer" ]
+    Html.footer [ class "footer" ]
         [ a [ href "https://twitter.com/roebuk" ] [ text "Twitter" ]
         , a [ href "https://github.com/roebuk" ] [ text "Github" ]
         ]
+
+
+viewNoBTWarning : Bool -> Html msg
+viewNoBTWarning hasBT =
+    if hasBT == True then
+        text ""
+
+    else
+        div [ class "warning" ] [ text "Your browser doesn't have Bluetooth support" ]
 
 
 viewContent : Page -> ( String, Html Msg )
@@ -158,8 +174,10 @@ view model =
     in
     { title = title
     , body =
-        [ lazy viewHeader model.page
-        , main_ [ Attrs.class "main" ] [ content ]
+        [ lazy viewHeader ()
+        , viewNoBTWarning model.hasBluetooth
+        , main_ [ class "main" ]
+            [ content ]
         , lazy viewFooter ()
         ]
     }
@@ -169,7 +187,7 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
