@@ -8,6 +8,7 @@ import Url.Parser as Parser exposing (Parser)
 
 type Route
     = Home
+    | FitnessTest
     | Results
 
 
@@ -22,6 +23,9 @@ routeToString route =
         Home ->
             "/"
 
+        FitnessTest ->
+            "/fitness"
+
         Results ->
             "/results"
 
@@ -30,6 +34,8 @@ routeParser : Parser (Route -> a) a
 routeParser =
     Parser.oneOf
         [ Parser.map Home Parser.top
+        , Parser.map FitnessTest (Parser.s "fitness")
+        , Parser.map Results (Parser.s "results")
         ]
 
 

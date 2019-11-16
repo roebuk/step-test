@@ -2,8 +2,13 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Browser.Navigation as Nav
+import FitnessTest
+import Home
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attrs exposing (href, src)
+import Html.Lazy exposing (lazy)
+import NotFound
+import Results
 import Routes
 import Url exposing (Url)
 
@@ -20,18 +25,19 @@ type alias Model =
 
 type Page
     = Home
+    | FitnessTest FitnessTest.Model
     | Results
     | NotFound
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    ( initialModel key, Cmd.none )
+    setNewPage (Routes.match url) (initialModel key)
 
 
 initialModel : Nav.Key -> Model
 initialModel key =
-    { page = Home
+    { page = NotFound
     , navKey = key
     }
 
@@ -43,6 +49,7 @@ initialModel key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged (Maybe Routes.Route)
+    | GotFitnessMsg FitnessTest.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -57,12 +64,34 @@ update msg model =
         LinkClicked (Browser.External href) ->
             ( model, Nav.load href )
 
+        GotFitnessMsg fitnessMsg ->
+            case model.page of
+                FitnessTest fitness ->
+                    toFitness model (FitnessTest.update fitnessMsg fitness)
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+toFitness : Model -> ( FitnessTest.Model, Cmd FitnessTest.Msg ) -> ( Model, Cmd Msg )
+toFitness model ( fitness, cmd ) =
+    ( { model | page = FitnessTest fitness }
+    , Cmd.map GotFitnessMsg cmd
+    )
+
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
 setNewPage maybeRoute model =
     case maybeRoute of
         Just Routes.Home ->
             ( { model | page = Home }, Cmd.none )
+
+        Just Routes.FitnessTest ->
+            let
+                ( fitnessModel, fitnessCmds ) =
+                    FitnessTest.init
+            in
+            ( { model | page = FitnessTest fitnessModel }, Cmd.map GotFitnessMsg fitnessCmds )
 
         Just Routes.Results ->
             ( { model | page = Results }, Cmd.none )
@@ -75,49 +104,65 @@ setNewPage maybeRoute model =
 ---- VIEW ----
 
 
-viewHeader : Html msg
-viewHeader =
-    Html.header [ class "header" ]
-        [ div [ class "header-inner" ]
-            [ Html.h1 [] [ a [ Routes.href Routes.Home, class "header-title" ] [ text "STEP TEST" ] ]
+viewHeader : Page -> Html msg
+viewHeader page =
+    Html.header [ Attrs.class "header" ]
+        [ div [ Attrs.class "header-inner" ]
+            [ Html.h1 [] [ a [ Routes.href Routes.Home, Attrs.class "header-title" ] [ text "HEADER" ] ]
             , div []
-                [ a [ Routes.href Routes.Results, class "nav-link" ] [ text "Results" ]
-                , a [ Routes.href Routes.Results, class "nav-link" ] [ text "About" ]
+                [ a [ Routes.href Routes.Results, Attrs.class "nav-link" ] [ text "Results" ]
+                , a [ Routes.href Routes.Results, Attrs.class "nav-link" ] [ text "About" ]
                 ]
             ]
         ]
 
 
-viewFooter : Html msg
-viewFooter =
-    Html.footer [ class "footer" ]
-        [ a
-            [ class "footer-logo mod-twitter"
-            , href "https://twitter.com/roebuk"
-            ]
-            [ span [ class "visually-hidden" ] [ text "Twitter" ] ]
-        , a
-            [ class "footer-logo mod-github"
-            , href "https://github.com/roebuk/step-test"
-            ]
-            [ span [ class "visually-hidden" ] [ text "Github" ] ]
+viewFooter : () -> Html msg
+viewFooter _ =
+    Html.footer [ Attrs.class "footer" ]
+        [ a [ href "https://twitter.com/roebuk" ] [ text "Twitter" ]
+        , a [ href "https://github.com/roebuk" ] [ text "Github" ]
         ]
+
+
+viewContent : Page -> ( String, Html Msg )
+viewContent page =
+    case page of
+        Home ->
+            ( "Home"
+            , Home.view
+            )
+
+        FitnessTest model ->
+            ( "Test"
+            , FitnessTest.view model
+                |> Html.map GotFitnessMsg
+            )
+
+        Results ->
+            ( "Results"
+            , Results.view
+            )
+
+        NotFound ->
+            ( "404 - Not Found"
+            , NotFound.view
+            )
 
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Hello"
+    let
+        ( title, content ) =
+            viewContent model.page
+    in
+    { title = title
     , body =
-        [ viewHeader
-        , main_ [ class "main" ] [ text "Hello World" ]
-        , viewFooter
+        [ lazy viewHeader model.page
+        , main_ [ Attrs.class "main" ] [ content ]
+        , lazy viewFooter ()
         ]
     }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
 
 
 
@@ -134,3 +179,14 @@ main =
         , onUrlChange = Routes.match >> UrlChanged
         , onUrlRequest = LinkClicked
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model.page of
+        FitnessTest fitnessTest ->
+            FitnessTest.subscriptions fitnessTest
+                |> Sub.map GotFitnessMsg
+
+        _ ->
+            Sub.none

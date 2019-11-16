@@ -1,0 +1,222 @@
+port module FitnessTest exposing (Model, Msg, init, subscriptions, update, view)
+
+import Html as Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events as Events exposing (on)
+import Json.Decode as Decode
+import Random
+import Time
+
+
+port requestBT : () -> Cmd msg
+
+
+port activeUsers : (Int -> msg) -> Sub msg
+
+
+type GameState
+    = CountDown
+    | Stepping
+    | Sitting
+    | Results
+
+
+type HeartBeat
+    = NotRequested
+    | Requested
+    | Beating Int
+    | Errored String
+
+
+type Sex
+    = Male
+    | Female
+
+
+type alias Person =
+    { name : String
+    , age : Int
+    , sex : Sex
+    }
+
+
+type alias Model =
+    { person : Person
+    , heartBeat : HeartBeat
+    , gameTime : Int
+    , number : Int
+    }
+
+
+
+-- updatePerson :
+-- updatePerson =
+
+
+type Msg
+    = GotFormSubmission
+    | Roll
+      -- | PersonMsg PersonMsg
+    | SetName String
+    | SetSex Sex
+    | SetAge String
+    | RequestBlueTooth
+    | GotBeat Int
+    | Tick Time.Posix
+    | NewFace Int
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { person = Person "" 0 Male
+      , heartBeat = NotRequested
+      , gameTime = 180
+      , number = 0
+      }
+    , Random.generate NewFace (Random.int 1 6)
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SetName name ->
+            ( model, Cmd.none )
+
+        SetSex sex ->
+            let
+                _ =
+                    Debug.log "got sex" sex
+            in
+            ( model, Cmd.none )
+
+        SetAge age ->
+            ( model, Cmd.none )
+
+        GotBeat beats ->
+            let
+                _ =
+                    Debug.log "" beats
+            in
+            ( { model | heartBeat = Beating beats }, Cmd.none )
+
+        NewFace number ->
+            ( { model | number = number }, Cmd.none )
+
+        GotFormSubmission ->
+            ( model, Cmd.none )
+
+        RequestBlueTooth ->
+            let
+                _ =
+                    Debug.log "req bt" model
+            in
+            ( { model | heartBeat = Requested }, requestBT () )
+
+        Roll ->
+            ( model, Random.generate NewFace (Random.int 1 6) )
+
+        Tick _ ->
+            let
+                newGameTime =
+                    model.gameTime - 1
+            in
+            ( { model | gameTime = model.gameTime - 1 }, Cmd.none )
+
+
+generateInputID : String -> String
+generateInputID =
+    String.toLower >> String.replace " " "-"
+
+
+viewTextInput : String -> String -> (String -> msg) -> Html msg
+viewTextInput inputLabel inputValue tagger =
+    let
+        inputID =
+            generateInputID inputLabel
+    in
+    div [ class "form-element" ]
+        [ label [ for inputID, class "form-element-label" ]
+            [ span [ class "form-element-label-text" ] [ text inputLabel ]
+            , input
+                [ id inputID
+                , type_ "text"
+                , class "form-element-input"
+                , Events.onInput tagger
+                , value inputValue
+                ]
+                []
+            ]
+        ]
+
+
+
+-- viewRadio : String -> Bool -> msg -> Html msg
+
+
+viewRadio radioLabel value selectedValue tagger =
+    let
+        inputID =
+            generateInputID radioLabel
+    in
+    div [ class "form-element-radio" ]
+        [ input
+            [ id inputID
+            , type_ "radio"
+            , onChange (tagger value)
+            , checked (value == selectedValue)
+            ]
+            []
+        , label [ for inputID ] [ text radioLabel ]
+        ]
+
+
+onChange : msg -> Attribute msg
+onChange msg =
+    on "click" (Decode.succeed msg)
+
+
+viewHeart : HeartBeat -> Html Msg
+viewHeart heartbeat =
+    div [ class "bluetooth-button-container" ]
+        [ case heartbeat of
+            NotRequested ->
+                button [ Events.onClick RequestBlueTooth, class "button  mod-small" ] [ text "Request Bluetooth" ]
+
+            Requested ->
+                button [ class "button  mod-small", disabled True ] [ text "Awaiting Beats" ]
+
+            Beating beats ->
+                div []
+                    [ div [ class "heart" ] []
+                    , span [] [ text (String.fromInt beats) ]
+                    ]
+
+            Errored _ ->
+                div [] [ text "Errored" ]
+        ]
+
+
+view : Model -> Html Msg
+view model =
+    div []
+        [ Html.form [ Events.onSubmit GotFormSubmission ]
+            [ viewTextInput "Name" model.person.name SetName
+            , viewTextInput "Age" (String.fromInt model.person.age) SetAge
+            , fieldset [ class "form-element" ]
+                [ legend [ class "form-element-label-text" ] [ text "Sex" ]
+                , viewRadio "Female" Female model.person.sex SetSex
+                , viewRadio "Male" Male model.person.sex SetSex
+                ]
+            , viewHeart model.heartBeat
+            , button [ type_ "submit", class "button mod-full" ] [ text "Start A new game" ]
+            ]
+        ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ activeUsers GotBeat
+        , Time.every 1000 Tick
+        ]
