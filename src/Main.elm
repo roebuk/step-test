@@ -1,25 +1,100 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Browser.Navigation as Nav
+import Html exposing (main_, text)
+import Routes
+import Url exposing (Url)
 
-main =
-  Browser.sandbox { init = 0, update = update, view = view }
 
-type Msg = Increment | Decrement
 
+---- MODEL ----
+
+
+type alias Model =
+    { navKey : Nav.Key
+    , page : Page
+    }
+
+
+type Page
+    = Home
+    | NotFound
+
+
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    ( initialModel key, Cmd.none )
+
+
+initialModel : Nav.Key -> Model
+initialModel key =
+    { page = Home
+    , navKey = key
+    }
+
+
+
+---- UPDATE ----
+
+
+type Msg
+    = LinkClicked Browser.UrlRequest
+    | UrlChanged (Maybe Routes.Route)
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    Increment ->
-      model + 1
+    case msg of
+        UrlChanged maybeRoute ->
+            setNewPage maybeRoute model
 
-    Decrement ->
-      model - 1
+        LinkClicked (Browser.Internal url) ->
+            ( model, Nav.pushUrl model.navKey (Url.toString url) )
 
+        LinkClicked (Browser.External href) ->
+            ( model, Nav.load href )
+
+
+setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
+setNewPage maybeRoute model =
+    case maybeRoute of
+        Just Routes.Home ->
+            ( { model | page = Home }, Cmd.none )
+
+        Nothing ->
+            ( { model | page = NotFound }, Cmd.none )
+
+
+
+---- VIEW ----
+
+
+view : Model -> Browser.Document Msg
 view model =
-  div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (String.fromInt model) ]
-    , button [ onClick Increment ] [ text "+" ]
-    ]
+    { title = "Hello"
+    , body =
+        [ main_ [] [ text "Hello World" ]
+        ]
+    }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+---- PROGRAM ----
+
+
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlChange = Routes.match >> UrlChanged
+        , onUrlRequest = LinkClicked
+        }
