@@ -13,6 +13,6 @@ minute. You're heart-rate after this minute provides an insight into your fitnes
 This may not be scientifically accurate.
 
 
-![Screenshot](https://raw.githubusercontent.com/roebuk/step-test/master/index.html "")
+![Screenshot](https://raw.githubusercontent.com/roebuk/step-test/master/screenshot.png "")
 
 [Demo](https://step.roeb.uk/)
