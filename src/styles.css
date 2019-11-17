@@ -248,12 +248,25 @@ form {
 
 
 .time-remaining {
-  font-size: 5rem
+  font-size: 5rem;
+  text-align: center;
+  display: block;
+  margin-bottom: 2rem;
+}
+
+.trem {
+  text-align: center;
+}
+
+.audio {
+  display: block;
+  height: 0;
+  width: 0;
 }
 
 .page-image {
-  height: 40rem;
-  width: 40rem;
+  height: 30rem;
+  width: 30rem;
   background: center / contain no-repeat;
 }
 
@@ -268,4 +281,58 @@ form {
 .page-heading {
   margin: 0;
   text-align: center;
+}
+
+.results-table {
+  height: 60rem;
+  width: 60rem;
+  background: url(./images/res-table.png) center / contain no-repeat;
+}
+
+.heart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0.4rem 1rem;
+}
+
+.heart-image {
+  background: url('./images/heart.svg');
+  height: 8rem;
+  width: 8rem;
+  object-fit: contain;
+  animation: beat 1.6s ease-in-out infinite;
+}
+
+.heart-text {
+  font-weight: bold;
+  font-size: 5rem;
+  font-family: helvetica;
+}
+
+@keyframes beat {
+  0% {
+    transform: scale(0.85)
+  }
+
+  20% {
+    transform: scale(1.02)
+  }
+
+  30% {
+    transform: scale(0.85)
+  }
+
+  50% {
+    transform: scale(1.02)
+  }
+
+  60% {
+    transform: scale(0.85)
+  }
+
+  100% {
+    transform: scale(0.85)
+  }
 }

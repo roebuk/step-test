@@ -3,7 +3,6 @@ import { Elm } from './Main.elm'
 import requestBluetooth from './bluetooth'
 
 document.addEventListener('DOMContentLoaded', () => {
-  const metroElement = document.querySelector('audio')
 
   const app = Elm.Main.init({
     flags: {
@@ -17,9 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   app.ports.metronome.subscribe(function () {
+    const metroElement = document.querySelector('audio')
 
     metroElement.pause()
-    metroElement.currentTime = 0;
+    metroElement.currentTime = 0
     metroElement.play()
   })
 })

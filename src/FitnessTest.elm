@@ -180,6 +180,13 @@ viewTextInput inputLabel inputValue tagger =
         ]
 
 
+viewAudio : Html msg
+viewAudio =
+    audio [ class "audio" ]
+        [ source [ src "/metro.mp3", type_ "audio/mp3" ] []
+        ]
+
+
 viewRadio : String -> Sex -> Sex -> (Sex -> Msg) -> Html Msg
 viewRadio radioLabel value selectedValue tagger =
     let
@@ -220,8 +227,10 @@ viewHeart heartbeat =
 
             Beating beats ->
                 div []
-                    [ div [ class "heart" ] []
-                    , span [] [ text (String.fromInt beats) ]
+                    [ div [ class "heart" ]
+                        [ div [ class "heart-image" ] []
+                        , span [ class "heart-text" ] [ text (String.fromInt beats) ]
+                        ]
                     ]
 
             Errored _ ->
@@ -231,20 +240,25 @@ viewHeart heartbeat =
 
 view : Model -> Html Msg
 view model =
-    div [] <|
-        case model.gameState of
-            RequestingInfo ->
-                [ viewForm model ]
+    div []
+        [ viewAudio
+        , div
+            []
+          <|
+            case model.gameState of
+                RequestingInfo ->
+                    [ viewForm model ]
 
-            TestActive ->
-                if model.gameTime < 60 then
-                    [ viewSittingActive model ]
+                TestActive ->
+                    if model.gameTime < 60 then
+                        [ viewSittingActive model ]
 
-                else
-                    [ viewTestActive model ]
+                    else
+                        [ viewTestActive model ]
 
-            Results ->
-                [ text "results" ]
+                Results ->
+                    [ text "results" ]
+        ]
 
 
 viewSittingActive : Model -> Html Msg
@@ -252,12 +266,15 @@ viewSittingActive model =
     div []
         [ h1 [ class "page-heading" ] [ text "Get Sit And Wait…" ]
         , div [ class "page-image mod-sitting" ] []
+        , div [ class "trem" ] [ text "Keep Sitting…" ]
         , span [ class "time-remaining" ] [ text (model.gameTime |> String.fromInt) ]
         , case model.heartBeat of
             Beating beats ->
                 div []
-                    [ div [ class "heart" ] []
-                    , span [] [ text (String.fromInt beats) ]
+                    [ div [ class "heart" ]
+                        [ div [ class "heart-image" ] []
+                        , span [ class "heart-text" ] [ text (String.fromInt beats) ]
+                        ]
                     ]
 
             _ ->
@@ -282,14 +299,16 @@ viewTestActive model =
         , div [ class "page-image mod-stepping" ]
             []
         , div
-            []
+            [ class "trem" ]
             [ text "Time Remaining..." ]
         , span [ class "time-remaining" ] [ text timeRemaining ]
         , case model.heartBeat of
             Beating beats ->
                 div []
-                    [ div [ class "heart" ] []
-                    , span [] [ text (String.fromInt beats) ]
+                    [ div [ class "heart" ]
+                        [ div [ class "heart-image" ] []
+                        , span [ class "heart-text" ] [ text (String.fromInt beats) ]
+                        ]
                     ]
 
             _ ->

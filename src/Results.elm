@@ -3,8 +3,7 @@ module Results exposing (Model, Msg(..), StepResult, init, stepResultDecoder, st
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Json.Decode as Decode exposing (Decoder, decodeString, field, float, int, nullable, string)
-import Routes
+import Json.Decode as Decode exposing (Decoder, field, int, string)
 
 
 
@@ -74,8 +73,6 @@ viewResult result =
             [ text (String.fromInt result.age) ]
         , td [ class "table-cell" ]
             [ text (String.fromInt result.heartBeat) ]
-        , td [ class "table-cell" ]
-            [ text (String.fromInt result.heartBeat) ]
         ]
 
 
@@ -89,9 +86,6 @@ viewResults results =
                 [ text "Age" ]
             , th [ class "table-heading" ]
                 [ text "HeartBeat" ]
-            , th
-                [ class "table-heading" ]
-                [ text "Result" ]
             ]
         , tbody [] <| List.map viewResult results
         ]
@@ -101,6 +95,7 @@ view : Model -> Html msg
 view model =
     div []
         [ h1 [] [ text "Results" ]
+        , div [ class "results-table" ] []
         , case model.results of
             Just res ->
                 viewResults res
