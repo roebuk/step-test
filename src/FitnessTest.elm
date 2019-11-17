@@ -332,7 +332,7 @@ viewForm model =
         ]
 
 
-beatsToMilli : Int
+beatsToMilli : Float
 beatsToMilli =
     60000 / 96
 
