@@ -1,6 +1,7 @@
 module Results exposing (Model, Msg(..), StepResult, init, stepResultDecoder, stepResultsDecoder, update, view)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, float, int, nullable, string)
 import Routes
@@ -21,7 +22,7 @@ type alias Model =
 type alias StepResult =
     { id : Int
     , name : String
-    , age : String
+    , age : Int
     , heartBeat : Int
     }
 
@@ -38,10 +39,10 @@ stepResultsDecoder =
 stepResultDecoder : Decoder StepResult
 stepResultDecoder =
     Decode.map4 StepResult
-        (field "id" int)
+        (field "result_id" int)
         (field "name" string)
-        (field "age" string)
-        (field "hearbeat" int)
+        (field "age" int)
+        (field "heart_beat" int)
 
 
 
@@ -53,8 +54,8 @@ update msg model =
     case msg of
         GotStepResults result ->
             case result of
-                Ok _ ->
-                    ( model, Cmd.none )
+                Ok results ->
+                    ( { model | results = Just results }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -64,11 +65,48 @@ update msg model =
 -- VIEW
 
 
+viewResult : StepResult -> Html msg
+viewResult result =
+    tr []
+        [ td [ class "table-cell" ]
+            [ text result.name ]
+        , td [ class "table-cell" ]
+            [ text (String.fromInt result.age) ]
+        , td [ class "table-cell" ]
+            [ text (String.fromInt result.heartBeat) ]
+        , td [ class "table-cell" ]
+            [ text (String.fromInt result.heartBeat) ]
+        ]
+
+
+viewResults : List StepResult -> Html msg
+viewResults results =
+    table [ class "table" ]
+        [ tr [ class "table-heading-row" ]
+            [ th [ class "table-heading" ]
+                [ text "Name" ]
+            , th [ class "table-heading" ]
+                [ text "Age" ]
+            , th [ class "table-heading" ]
+                [ text "HeartBeat" ]
+            , th
+                [ class "table-heading" ]
+                [ text "Result" ]
+            ]
+        , tbody [] <| List.map viewResult results
+        ]
+
+
 view : Model -> Html msg
 view model =
     div []
         [ h1 [] [ text "Results" ]
-        , a [ Routes.href Routes.Home ] [ text "Home" ]
+        , case model.results of
+            Just res ->
+                viewResults res
+
+            Nothing ->
+                div [] [ text "No results" ]
         ]
 
 

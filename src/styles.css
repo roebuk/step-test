@@ -1,7 +1,6 @@
 :root {
   --mainColour: hsl(208, 93%, 40%);
-  --mainColourLight: hsl(208, 93%, 50%)
-
+  --mainColourLight: hsl(208, 93%, 50%);
 }
 
 *,
@@ -39,7 +38,6 @@ a {
 }
 
 .header {
-  padding: 2rem;
   background-color: var(--mainColour);
 }
 
@@ -75,7 +73,7 @@ a {
   padding: 4rem 0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   max-width: 90rem;
   margin: 0 auto;
 }
@@ -99,8 +97,8 @@ a {
 
 .footer-logo {
   display: block;
-  height: 4rem;
-  width: 4rem;
+  height: 3.4rem;
+  width: 3.4rem;
   background: url(./images/twitter.svg) no-repeat;
   transition: opacity 0.3s ease;
   fill: #fff
@@ -158,10 +156,6 @@ form {
 .form-element-input:active,
 .form-element-input:focus {
   border-color: #076bc4;;
-}
-
-.form-element-label {
-
 }
 
 .form-element-label-text {
@@ -234,4 +228,44 @@ form {
 /* HOME  */
 .home-container {
   max-width: 50rem;
+}
+
+
+/* RESULTS */
+.table {
+  border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+.table-heading-row {
+  background: #d6d6d6;
+}
+
+.table-heading,
+.table-cell {
+  padding: 1rem 2rem;
+}
+
+
+.time-remaining {
+  font-size: 5rem
+}
+
+.page-image {
+  height: 40rem;
+  width: 40rem;
+  background: center / contain no-repeat;
+}
+
+.mod-sitting {
+  background-image: url(./images/sitting.svg);
+}
+
+.mod-stepping {
+  background-image: url(./images/step.svg);
+}
+
+.page-heading {
+  margin: 0;
+  text-align: center;
 }

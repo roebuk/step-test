@@ -3,8 +3,11 @@ port module FitnessTest exposing (Model, Msg, init, subscriptions, update, view)
 import Html as Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (on)
+import Http
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Time
+import Types exposing (Sex(..))
 
 
 port requestBT : () -> Cmd msg
@@ -13,18 +16,16 @@ port requestBT : () -> Cmd msg
 port receiveHeartBeat : (Int -> msg) -> Sub msg
 
 
-stepDuration =
-    180
+port metronome : () -> Cmd msg
 
 
-sitDuration =
-    60
+gameTime =
+    240
 
 
 type GameState
     = RequestingInfo
-    | Stepping
-    | Sitting
+    | TestActive
     | Results
 
 
@@ -35,11 +36,6 @@ type HeartBeat
     | Errored String
 
 
-type Sex
-    = Male
-    | Female
-
-
 type alias Model =
     { name : String
     , age : String
@@ -47,7 +43,6 @@ type alias Model =
     , heartBeat : HeartBeat
     , gameState : GameState
     , gameTime : Int
-    , number : Int
     }
 
 
@@ -59,6 +54,8 @@ type Msg
     | RequestBlueTooth
     | GotHeartBeat Int
     | Tick Time.Posix
+    | MetroTick Time.Posix
+    | GotResultResponse (Result Http.Error String)
 
 
 init : ( Model, Cmd Msg )
@@ -68,11 +65,19 @@ init =
       , sex = Female
       , heartBeat = NotRequested
       , gameState = RequestingInfo
-      , gameTime = 180
-      , number = 0
+      , gameTime = gameTime
       }
     , Cmd.none
     )
+
+
+encodeResult : String -> Int -> Int -> Encode.Value
+encodeResult name age heartBeat =
+    Encode.object
+        [ ( "name", Encode.string name )
+        , ( "age", Encode.int age )
+        , ( "heartBeat", Encode.int heartBeat )
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -91,7 +96,7 @@ update msg model =
             ( { model | heartBeat = Beating beats }, Cmd.none )
 
         GotFormSubmission ->
-            ( { model | gameState = Stepping }, Cmd.none )
+            ( { model | gameState = TestActive }, Cmd.none )
 
         RequestBlueTooth ->
             ( { model | heartBeat = Requested }, requestBT () )
@@ -99,9 +104,54 @@ update msg model =
         Tick _ ->
             let
                 newGameTime =
-                    model.gameTime - 1
+                    clamp 0 gameTime (model.gameTime - 1)
+
+                isFinished =
+                    if newGameTime == 0 then
+                        Results
+
+                    else
+                        TestActive
+
+                beats =
+                    case model.heartBeat of
+                        Beating heartRate ->
+                            heartRate
+
+                        _ ->
+                            0
+
+                fireCmd =
+                    if isFinished == Results then
+                        Http.post
+                            { url = "https://step.roeb.uk/api"
+                            , body = Http.jsonBody (encodeResult model.name (model.age |> String.toInt |> Maybe.withDefault 18) beats)
+                            , expect = Http.expectString GotResultResponse
+                            }
+
+                    else
+                        Cmd.none
             in
-            ( { model | gameTime = model.gameTime - 1 }, Cmd.none )
+            ( { model | gameTime = newGameTime, gameState = isFinished }, fireCmd )
+
+        MetroTick _ ->
+            let
+                cmdToFire =
+                    if model.gameTime < 60 then
+                        Cmd.none
+
+                    else
+                        metronome ()
+            in
+            ( model, cmdToFire )
+
+        GotResultResponse result ->
+            case result of
+                Ok _ ->
+                    ( model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 generateInputID : String -> String
@@ -158,7 +208,12 @@ viewHeart heartbeat =
     div [ class "bluetooth-button-container" ]
         [ case heartbeat of
             NotRequested ->
-                button [ Events.onClick RequestBlueTooth, class "button  mod-small" ] [ text "Request Bluetooth" ]
+                button
+                    [ Events.onClick RequestBlueTooth
+                    , class "button  mod-small"
+                    , type_ "button"
+                    ]
+                    [ text "Request Bluetooth" ]
 
             Requested ->
                 button [ class "button  mod-small", disabled True ] [ text "Awaiting Beats" ]
@@ -181,14 +236,65 @@ view model =
             RequestingInfo ->
                 [ viewForm model ]
 
-            Stepping ->
-                [ text "stepping" ]
+            TestActive ->
+                if model.gameTime < 60 then
+                    [ viewSittingActive model ]
 
-            Sitting ->
-                [ text "sitting" ]
+                else
+                    [ viewTestActive model ]
 
             Results ->
                 [ text "results" ]
+
+
+viewSittingActive : Model -> Html Msg
+viewSittingActive model =
+    div []
+        [ h1 [ class "page-heading" ] [ text "Get Sit And Wait…" ]
+        , div [ class "page-image mod-sitting" ] []
+        , span [ class "time-remaining" ] [ text (model.gameTime |> String.fromInt) ]
+        , case model.heartBeat of
+            Beating beats ->
+                div []
+                    [ div [ class "heart" ] []
+                    , span [] [ text (String.fromInt beats) ]
+                    ]
+
+            _ ->
+                text ""
+        ]
+
+
+viewTestActive : Model -> Html Msg
+viewTestActive model =
+    let
+        timeRemaining =
+            model.gameTime - 60 |> String.fromInt
+
+        stepStage =
+            modBy 4 (model.gameTime - 60)
+
+        dots =
+            List.range 0 (stepStage + 1)
+    in
+    div []
+        [ h1 [ class "page-heading" ] [ text "Get Stepping…" ]
+        , div [ class "page-image mod-stepping" ]
+            []
+        , div
+            []
+            [ text "Time Remaining..." ]
+        , span [ class "time-remaining" ] [ text timeRemaining ]
+        , case model.heartBeat of
+            Beating beats ->
+                div []
+                    [ div [ class "heart" ] []
+                    , span [] [ text (String.fromInt beats) ]
+                    ]
+
+            _ ->
+                text ""
+        ]
 
 
 viewForm : Model -> Html Msg
@@ -206,10 +312,23 @@ viewForm model =
         ]
 
 
+beatsToMilli =
+    60000 / 96
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ receiveHeartBeat GotHeartBeat
+        , if model.gameState == TestActive then
+            Time.every 1000 Tick
 
-        -- Time.every 1000 Tick
+          else
+            Sub.none
+        , case model.gameState of
+            TestActive ->
+                Time.every beatsToMilli MetroTick
+
+            _ ->
+                Sub.none
         ]

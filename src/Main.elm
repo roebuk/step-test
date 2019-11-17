@@ -137,9 +137,7 @@ viewHeader _ =
         [ div [ class "header-inner" ]
             [ Html.h1 [] [ a [ Routes.href Routes.Home, class "header-title" ] [ text "Step Test" ] ]
             , div []
-                [ a [ Routes.href Routes.Results, class "nav-link" ] [ text "Results" ]
-                , a [ Routes.href Routes.Results, class "nav-link" ] [ text "About" ]
-                ]
+                [ a [ Routes.href Routes.Results, class "nav-link" ] [ text "Results" ] ]
             ]
         ]
 
@@ -156,7 +154,7 @@ viewFooter _ =
                 [ span [ class "visually-hidden" ] [ text "Twitter" ] ]
             , a
                 [ class "footer-logo mod-github"
-                , href "https://github.com/roebuk"
+                , href "https://github.com/roebuk/step-test"
                 ]
                 [ span [ class "visually-hidden" ] [ text "Github" ] ]
             ]

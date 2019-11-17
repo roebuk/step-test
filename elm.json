@@ -16,6 +16,7 @@
         },
         "indirect": {
             "elm/bytes": "1.0.8",
+            "elm/random": "1.0.0",
             "elm/file": "1.0.5",
             "elm/virtual-dom": "1.0.2"
         }
