@@ -19,6 +19,7 @@ port receiveHeartBeat : (Int -> msg) -> Sub msg
 port metronome : () -> Cmd msg
 
 
+gameTime : Int
 gameTime =
     240
 
@@ -331,6 +332,7 @@ viewForm model =
         ]
 
 
+beatsToMilli : Int
 beatsToMilli =
     60000 / 96
 
